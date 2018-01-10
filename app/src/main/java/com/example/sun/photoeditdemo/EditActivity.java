@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -23,12 +24,21 @@ import com.example.sun.photoeditdemo.widget.PaletteView;
  */
 public class EditActivity extends AppCompatActivity implements View.OnClickListener {
     private String mPath;
-    private Bitmap mBitmap;
+    private Bitmap mBitmap, mEditBitmap;
+
+    private TextView tvTitle, tvCancel, tvComplete;
 
     private ImageView ivContent;
     private PaletteView drawView;
 
-    private ViewGroup colorLayout;
+    private ViewGroup centerLayout;
+    private ViewGroup editLayout, menuLayout, drawLayout;
+
+    enum EditFlag {
+        NONE, DRAW,
+    }
+
+    private EditFlag currentFlag = EditFlag.NONE;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -42,10 +52,18 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initView() {
+        tvTitle = findViewById(R.id.tv_title);
+        tvCancel = findViewById(R.id.tv_cancel);
+        tvComplete = findViewById(R.id.tv_complete);
+
+        centerLayout = findViewById(R.id.center_layout);
+
         ivContent = findViewById(R.id.iv_content);
         drawView = findViewById(R.id.draw_view);
 
-        colorLayout = findViewById(R.id.color_layout);
+        editLayout = findViewById(R.id.edit_layout);
+        menuLayout = findViewById(R.id.menu_layout);
+        drawLayout = findViewById(R.id.draw_layout);
 
         drawView.setCallback(new PaletteView.Callback() {
             @Override
@@ -54,9 +72,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                         getResources().getColor(R.color.white) : getResources().getColor(R.color.gray));
             }
         });
+
+        tvCancel.setOnClickListener(this);
+        tvComplete.setOnClickListener(this);
+
+        findViewById(R.id.cha).setOnClickListener(this);
+        findViewById(R.id.gou).setOnClickListener(this);
         findViewById(R.id.draw).setOnClickListener(this);
-        findViewById(R.id.cancel).setOnClickListener(this);
-        findViewById(R.id.complete).setOnClickListener(this);
+
         findViewById(R.id.white).setOnClickListener(colorClickListener);
         findViewById(R.id.black).setOnClickListener(colorClickListener);
         findViewById(R.id.red).setOnClickListener(colorClickListener);
@@ -82,16 +105,28 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.draw:
-                if (colorLayout.getVisibility() == View.VISIBLE) {
+            case R.id.gou:
+                if (currentFlag == EditFlag.DRAW) {
+                    mEditBitmap = new OperateUtils(this).convertViewToBitmap(centerLayout);
+                    ivContent.setImageBitmap(mEditBitmap);
+                    drawView.reset();
                     drawView.setDrawable(false);
-                    drawView.setVisibility(View.GONE);
-                    colorLayout.setVisibility(View.GONE);
-                } else {
-                    drawView.setDrawable(true);
-                    drawView.setVisibility(View.VISIBLE);
-                    colorLayout.setVisibility(View.VISIBLE);
                 }
+                reset();
+                break;
+            case R.id.cha:
+                if (currentFlag == EditFlag.DRAW) {
+                    drawView.clear();
+                    drawView.setDrawable(false);
+                }
+                reset();
+                break;
+            case R.id.draw:
+                currentFlag = EditFlag.DRAW;
+                tvTitle.setText("涂鸦");
+                drawView.setDrawable(true);
+                editLayout.setVisibility(View.GONE);
+                menuLayout.setVisibility(View.VISIBLE);
                 break;
             case R.id.cancel:
                 finish();
@@ -100,6 +135,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 Toast.makeText(this, "完成", Toast.LENGTH_SHORT).show();
                 break;
         }
+    }
+
+    private void reset() {
+        tvTitle.setText("");
+        currentFlag = EditFlag.NONE;
+        menuLayout.setVisibility(View.GONE);
+        editLayout.setVisibility(View.VISIBLE);
     }
 
     private View.OnClickListener colorClickListener = new View.OnClickListener() {

@@ -3,6 +3,8 @@ package com.example.sun.photoeditdemo.utils;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.text.TextUtils;
@@ -96,6 +98,23 @@ public class OperateUtils {
         }
         return resizeBmp;
     }
+
+    /**
+     * 将View转换为Bitmap
+     *
+     * @param view
+     * @return
+     */
+    public Bitmap convertViewToBitmap(View view) {
+        view.setDrawingCacheEnabled(true);
+        view.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+        Bitmap bitmap = Bitmap.createBitmap(view.getDrawingCache());
+        view.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
 /*
     *//**
      * 添加文字方法

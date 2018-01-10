@@ -208,6 +208,15 @@ public class PaletteView extends View {
         }
     }
 
+    public void reset() {
+        if (mDrawingList != null) {
+            mDrawingList.clear();
+            if (mCallback != null) {
+                mCallback.onUndoRedoStatusChanged();
+            }
+        }
+    }
+
     public Bitmap buildBitmap() {
         Bitmap bm = getDrawingCache();
         Bitmap result = Bitmap.createBitmap(bm);

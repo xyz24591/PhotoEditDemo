@@ -5,143 +5,187 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <ImageView
-        android:id="@+id/iv_content"
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/top_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="50dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        app:justifyContent="space_between">
 
-    <com.example.sun.photoeditdemo.widget.PaletteView
-        android:id="@+id/draw_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:visibility="gone" />
+        <TextView
+            android:id="@+id/tv_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="取消"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_complete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="完成"
+            android:textColor="@color/green"
+            android:textSize="14sp" />
+    </com.google.android.flexbox.FlexboxLayout>
 
     <RelativeLayout
+        android:id="@+id/center_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/bottom_layout"
+        android:layout_below="@id/top_layout">
+
+        <ImageView
+            android:id="@+id/iv_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+
+        <com.example.sun.photoeditdemo.widget.PaletteView
+            android:id="@+id/draw_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/bottom_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
 
-        <com.google.android.flexbox.FlexboxLayout
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:paddingLeft="12dp"
-            android:paddingRight="12dp"
-            app:justifyContent="space_between">
-
-            <TextView
-                android:id="@+id/cancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="取消"
-                android:textColor="@color/white"
-                android:textSize="14sp" />
-
-            <TextView
-                android:id="@+id/complete"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="完成"
-                android:textColor="@color/green"
-                android:textSize="14sp" />
-        </com.google.android.flexbox.FlexboxLayout>
-
-        <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/color_layout"
+        <LinearLayout
+            android:id="@+id/menu_layout"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_above="@id/edit_layout"
-            android:visibility="gone"
-            app:justifyContent="space_around">
+            android:gravity="center"
+            android:visibility="gone">
 
             <TextView
-                android:id="@+id/white"
+                android:id="@+id/cha"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="白"
+                android:layout_marginLeft="10dp"
+                android:text="叉"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
 
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/draw_layout"
+                android:layout_width="0dp"
+                android:layout_height="45dp"
+                android:layout_above="@id/edit_layout"
+                android:layout_weight="1"
+                app:justifyContent="space_around">
+
+                <TextView
+                    android:id="@+id/white"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="白"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="黑"
+                    android:textColor="@color/white"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/red"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="红"
+                    android:textColor="@color/red"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/yellow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="黄"
+                    android:textColor="@color/yellow"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/green"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="绿"
+                    android:textColor="@color/green"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/blue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="蓝"
+                    android:textColor="@color/blue"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/purple"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="紫"
+                    android:textColor="@color/purple"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/pink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="粉"
+                    android:textColor="@color/pink"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/recall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="撤"
+                    android:textColor="@color/gray"
+                    android:textSize="12sp" />
+            </com.google.android.flexbox.FlexboxLayout>
+
             <TextView
-                android:id="@+id/black"
+                android:id="@+id/gou"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="黑"
+                android:layout_marginRight="10dp"
+                android:text="勾"
                 android:textColor="@color/white"
                 android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/red"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="红"
-                android:textColor="@color/red"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/yellow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="黄"
-                android:textColor="@color/yellow"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/green"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="绿"
-                android:textColor="@color/green"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/blue"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="蓝"
-                android:textColor="@color/blue"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/purple"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="紫"
-                android:textColor="@color/purple"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/pink"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="粉"
-                android:textColor="@color/pink"
-                android:textSize="12sp" />
-
-            <TextView
-                android:id="@+id/recall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="撤"
-                android:textColor="@color/gray"
-                android:textSize="12sp" />
-        </com.google.android.flexbox.FlexboxLayout>
+        </LinearLayout>
 
         <com.google.android.flexbox.FlexboxLayout
             android:id="@+id/edit_layout"
             android:layout_width="match_parent"
             android:layout_height="45dp"
-            android:layout_alignParentBottom="true"
             app:justifyContent="space_around">
 
             <TextView
