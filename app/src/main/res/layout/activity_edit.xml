@@ -52,6 +52,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true" />
+
+        <com.example.sun.photoeditdemo.widget.MosaicView
+            android:id="@+id/mosaic_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
     </RelativeLayout>
 
     <RelativeLayout
@@ -232,6 +238,7 @@
                 android:textSize="12sp" />
 
             <TextView
+                android:id="@+id/mosaic"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center"
