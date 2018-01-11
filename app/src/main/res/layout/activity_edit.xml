@@ -47,13 +47,7 @@
         android:layout_above="@id/bottom_layout"
         android:layout_below="@id/top_layout">
 
-        <ImageView
-            android:id="@+id/iv_content"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true" />
-
-        <com.example.sun.photoeditdemo.widget.PaletteView
+        <com.example.sun.photoeditdemo.widget.DrawingView
             android:id="@+id/draw_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -168,7 +162,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="撤"
-                    android:textColor="@color/gray"
+                    android:textColor="@color/white"
                     android:textSize="12sp" />
             </com.google.android.flexbox.FlexboxLayout>
 

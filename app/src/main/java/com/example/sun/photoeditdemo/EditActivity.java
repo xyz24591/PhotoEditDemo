@@ -4,18 +4,16 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sun.photoeditdemo.utils.OperateUtils;
-import com.example.sun.photoeditdemo.widget.PaletteView;
+import com.example.sun.photoeditdemo.widget.DrawingView;
 
 /**
  * @author Sun
@@ -28,8 +26,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     private TextView tvTitle, tvCancel, tvComplete;
 
-    private ImageView ivContent;
-    private PaletteView drawView;
+    private DrawingView drawView;
 
     private ViewGroup centerLayout;
     private ViewGroup editLayout, menuLayout, drawLayout;
@@ -58,20 +55,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
         centerLayout = findViewById(R.id.center_layout);
 
-        ivContent = findViewById(R.id.iv_content);
         drawView = findViewById(R.id.draw_view);
 
         editLayout = findViewById(R.id.edit_layout);
         menuLayout = findViewById(R.id.menu_layout);
         drawLayout = findViewById(R.id.draw_layout);
-
-        drawView.setCallback(new PaletteView.Callback() {
-            @Override
-            public void onUndoRedoStatusChanged() {
-                ((TextView) findViewById(R.id.recall)).setTextColor(drawView.canUndo() ?
-                        getResources().getColor(R.color.white) : getResources().getColor(R.color.gray));
-            }
-        });
 
         tvCancel.setOnClickListener(this);
         tvComplete.setOnClickListener(this);
@@ -93,9 +81,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     private void initData() {
         mPath = getIntent().getStringExtra("camera_path");
-        mBitmap = new OperateUtils(this).compressionFiller(mPath, ivContent);
+        mBitmap = new OperateUtils(this).compressionFiller(mPath, drawView);
 
-        ivContent.setImageBitmap(mBitmap);
+        drawView.initializePen();
+        drawView.setPenSize(18);
+        drawView.setPenColor(getResources().getColor(R.color.red));
+        drawView.loadImage(mBitmap);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) drawView.getLayoutParams();
         lp.width = mBitmap.getWidth();
         lp.height = mBitmap.getHeight();
@@ -107,31 +98,28 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.gou:
                 if (currentFlag == EditFlag.DRAW) {
-                    mEditBitmap = new OperateUtils(this).convertViewToBitmap(centerLayout);
-                    ivContent.setImageBitmap(mEditBitmap);
-                    drawView.reset();
-                    drawView.setDrawable(false);
+                    mEditBitmap = drawView.getImageBitmap();
+                    drawView.loadImage(mEditBitmap);
                 }
                 reset();
                 break;
             case R.id.cha:
                 if (currentFlag == EditFlag.DRAW) {
-                    drawView.clear();
-                    drawView.setDrawable(false);
+                    drawView.reset();
+                    drawView.loadImage(mEditBitmap);
                 }
                 reset();
                 break;
             case R.id.draw:
                 currentFlag = EditFlag.DRAW;
                 tvTitle.setText("涂鸦");
-                drawView.setDrawable(true);
                 editLayout.setVisibility(View.GONE);
                 menuLayout.setVisibility(View.VISIBLE);
                 break;
-            case R.id.cancel:
+            case R.id.tv_cancel:
                 finish();
                 break;
-            case R.id.complete:
+            case R.id.tv_complete:
                 Toast.makeText(this, "完成", Toast.LENGTH_SHORT).show();
                 break;
         }
