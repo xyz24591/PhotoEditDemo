@@ -1,6 +1,7 @@
 package com.example.sun.photoeditdemo.widget;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -8,10 +9,12 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 
 import java.util.ArrayList;
@@ -108,8 +111,54 @@ public class MosaicView extends android.support.v7.widget.AppCompatImageView {
         float scale = mTargetWidth / width;
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
-        mMosaicBmp = Bitmap.createBitmap(bm, 0, 0, width, bm.getHeight(),
-                matrix, true);
+//        mMosaicBmp = Bitmap.createBitmap(bm, 0, 0, width, bm.getHeight(), matrix, true);
+        mMosaicBmp = getGridMosaic(bm);
+    }
+
+    private Bitmap getGridMosaic(Bitmap bm) {
+        int gridWidth = dp2px(5);
+        int imageWidth = bm.getWidth();
+        int imageHeight = bm.getHeight();
+
+        Bitmap bitmap = Bitmap.createBitmap(imageWidth, imageHeight,
+                Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        int horCount = (int) Math.ceil(imageWidth / (float) gridWidth);
+        int verCount = (int) Math.ceil(imageHeight / (float) gridWidth);
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+
+        for (int horIndex = 0; horIndex < horCount; ++horIndex) {
+            for (int verIndex = 0; verIndex < verCount; ++verIndex) {
+                int l = gridWidth * horIndex;
+                int t = gridWidth * verIndex;
+                int r = l + gridWidth;
+                if (r > imageWidth) {
+                    r = imageWidth;
+                }
+                int b = t + gridWidth;
+                if (b > imageHeight) {
+                    b = imageHeight;
+                }
+                int color = bm.getPixel(l, t);
+                Rect rect = new Rect(l, t, r, b);
+                paint.setColor(color);
+                canvas.drawRect(rect, paint);
+            }
+        }
+        canvas.save();
+        return bitmap;
+    }
+
+    private int dp2px(int dip) {
+        Context context = this.getContext();
+        Resources resources = context.getResources();
+        int px = Math
+                .round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+                        dip, resources.getDisplayMetrics()));
+        return px;
     }
 
     /**
