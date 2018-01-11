@@ -160,7 +160,6 @@ public class DrawingView extends View {
     }
 
     public void initializePen() {
-        mDrawMode = true;
         mPaint = null;
         mPaint = new Paint();
         mPaint.setAntiAlias(true);
@@ -170,6 +169,10 @@ public class DrawingView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPaint.setStrokeCap(Paint.Cap.ROUND);
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER));
+    }
+
+    public void updateDrawMode(boolean drawMode) {
+        this.mDrawMode = drawMode;
     }
 
     @Override
@@ -227,6 +230,11 @@ public class DrawingView extends View {
     public void reset() {
         if (savePath != null) {
             savePath.clear();
+            invalidate();
+
+            // 清空画布
+            mCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+            loadImage(mOriginBitmap);
         }
     }
 

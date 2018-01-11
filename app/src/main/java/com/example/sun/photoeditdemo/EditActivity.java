@@ -82,10 +82,11 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private void initData() {
         mPath = getIntent().getStringExtra("camera_path");
         mBitmap = new OperateUtils(this).compressionFiller(mPath, drawView);
+        mEditBitmap = mBitmap;
 
         drawView.initializePen();
         drawView.setPenSize(18);
-        drawView.setPenColor(getResources().getColor(R.color.red));
+        drawView.setPenColor(getResources().getColor(R.color.white));
         drawView.loadImage(mBitmap);
         RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) drawView.getLayoutParams();
         lp.width = mBitmap.getWidth();
@@ -99,6 +100,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.gou:
                 if (currentFlag == EditFlag.DRAW) {
                     mEditBitmap = drawView.getImageBitmap();
+                    drawView.updateDrawMode(false);
                     drawView.loadImage(mEditBitmap);
                 }
                 reset();
@@ -106,13 +108,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.cha:
                 if (currentFlag == EditFlag.DRAW) {
                     drawView.reset();
-                    drawView.loadImage(mEditBitmap);
+                    drawView.updateDrawMode(false);
                 }
                 reset();
                 break;
             case R.id.draw:
                 currentFlag = EditFlag.DRAW;
                 tvTitle.setText("涂鸦");
+                drawView.updateDrawMode(true);
                 editLayout.setVisibility(View.GONE);
                 menuLayout.setVisibility(View.VISIBLE);
                 break;
