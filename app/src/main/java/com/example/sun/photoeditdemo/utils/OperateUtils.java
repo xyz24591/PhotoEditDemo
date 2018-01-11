@@ -12,6 +12,16 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.sun.photoeditdemo.R;
+import com.example.sun.photoeditdemo.utils.operate.ImageObject;
+import com.example.sun.photoeditdemo.utils.operate.OperateView;
+import com.example.sun.photoeditdemo.utils.operate.TextObject;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * 添加文字图片工具类
  */
@@ -115,13 +125,41 @@ public class OperateUtils {
         return bitmap;
     }
 
-/*
-    *//**
+    // 将模板View的图片转化为Bitmap
+    public Bitmap getBitmapByView(View v) {
+        Bitmap bitmap = Bitmap.createBitmap(v.getWidth(), v.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        v.draw(canvas);
+        return bitmap;
+    }
+
+    public String saveBitmap(Bitmap bitmap) {
+        File file = new File(getTempPath());
+        try {
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            bos.flush();
+            bos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
+    }
+
+    private String getTempPath() {
+        File dir = new File(activity.getExternalCacheDir(), "temp");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir.getAbsolutePath() + "/" + "temp.jpg";
+    }
+
+    /**
      * 添加文字方法
      *
      * @param text 所添加的文字
      * @return TextObject 返回的字体图片对象
-     *//*
+     */
     public TextObject getTextObject(String text) {
         TextObject textObj = null;
         if (TextUtils.isEmpty(text)) {
@@ -130,16 +168,16 @@ public class OperateUtils {
         }
 
         Bitmap rotateBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.rotate);
+                R.mipmap.rotate);
         Bitmap deleteBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.delete);
+                R.mipmap.delete);
 
         textObj = new TextObject(activity, text, 150, 150, rotateBm, deleteBm);
         textObj.setTextObject(true);
         return textObj;
     }
 
-    *//**
+    /**
      * 添加图片的方法
      *
      * @param text        文本内容
@@ -148,7 +186,7 @@ public class OperateUtils {
      * @param x           离边界x坐标
      * @param y           离边界y坐标
      * @return
-     *//*
+     */
     public TextObject getTextObject(String text, OperateView operateView,
                                     int quadrant, int x, int y) {
         TextObject textObj = null;
@@ -179,33 +217,33 @@ public class OperateUtils {
                 break;
         }
         Bitmap rotateBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.rotate);
+                R.mipmap.rotate);
         Bitmap deleteBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.delete);
+                R.mipmap.delete);
         textObj = new TextObject(activity, text, x, y, rotateBm, deleteBm);
         textObj.setTextObject(true);
         return textObj;
     }
 
-    *//**
+    /**
      * 添加图片方法
      *
      * @param srcBmp 被操作的图片
      * @return
-     *//*
+     */
 
     public ImageObject getImageObject(Bitmap srcBmp) {
         Bitmap rotateBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.rotate);
+                R.mipmap.rotate);
         Bitmap deleteBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.delete);
+                R.mipmap.delete);
         ImageObject imgObject = new ImageObject(srcBmp, rotateBm, deleteBm);
         Point point = new Point(20, 20);
         imgObject.setPoint(point);
         return imgObject;
     }
 
-    *//**
+    /**
      * 添加图片方法
      *
      * @param srcBmp      被操作的图片
@@ -214,14 +252,14 @@ public class OperateUtils {
      * @param x           离边界x坐标
      * @param y           离边界y坐标
      * @return
-     *//*
+     */
 
     public ImageObject getImageObject(Bitmap srcBmp, OperateView operateView,
                                       int quadrant, int x, int y) {
         Bitmap rotateBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.rotate);
+                R.mipmap.rotate);
         Bitmap deleteBm = BitmapFactory.decodeResource(activity.getResources(),
-                R.drawable.delete);
+                R.mipmap.delete);
         int width = operateView.getWidth();
         int height = operateView.getHeight();
         //		int srcWidth = srcBmp.getWidth();
@@ -274,6 +312,4 @@ public class OperateUtils {
         imgObject.setPoint(point);
         return imgObject;
     }
-*/
-
 }

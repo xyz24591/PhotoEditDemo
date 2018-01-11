@@ -1,18 +1,26 @@
 package com.example.sun.photoeditdemo;
 
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.sun.photoeditdemo.utils.OperateUtils;
+import com.example.sun.photoeditdemo.utils.operate.ImageObject;
+import com.example.sun.photoeditdemo.utils.operate.OperateView;
+import com.example.sun.photoeditdemo.utils.operate.TextObject;
 import com.example.sun.photoeditdemo.widget.DrawingView;
 
 /**
@@ -28,11 +36,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     private DrawingView drawView;
 
+    private TextView tvAddTags;
+    private OperateView operateView;
+
     private ViewGroup centerLayout;
-    private ViewGroup editLayout, menuLayout, drawLayout;
+    private ViewGroup editLayout, menuLayout, drawLayout, tagsLayout;
 
     enum EditFlag {
-        NONE, DRAW,
+        NONE, DRAW, TEXT, BROW
     }
 
     private EditFlag currentFlag = EditFlag.NONE;
@@ -56,10 +67,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         centerLayout = findViewById(R.id.center_layout);
 
         drawView = findViewById(R.id.draw_view);
+        tvAddTags = findViewById(R.id.tv_add_tags);
 
         editLayout = findViewById(R.id.edit_layout);
         menuLayout = findViewById(R.id.menu_layout);
         drawLayout = findViewById(R.id.draw_layout);
+        tagsLayout = findViewById(R.id.tags_layout);
 
         tvCancel.setOnClickListener(this);
         tvComplete.setOnClickListener(this);
@@ -67,6 +80,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.cha).setOnClickListener(this);
         findViewById(R.id.gou).setOnClickListener(this);
         findViewById(R.id.draw).setOnClickListener(this);
+        findViewById(R.id.brow).setOnClickListener(this);
+        findViewById(R.id.text).setOnClickListener(this);
 
         findViewById(R.id.white).setOnClickListener(colorClickListener);
         findViewById(R.id.black).setOnClickListener(colorClickListener);
@@ -77,11 +92,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.purple).setOnClickListener(colorClickListener);
         findViewById(R.id.pink).setOnClickListener(colorClickListener);
         findViewById(R.id.recall).setOnClickListener(colorClickListener);
+        tvAddTags.setOnClickListener(tagsClickListener);
     }
 
     private void initData() {
         mPath = getIntent().getStringExtra("camera_path");
-        mBitmap = new OperateUtils(this).compressionFiller(mPath, drawView);
+        mBitmap = new OperateUtils(this).compressionFiller(mPath, centerLayout);
         mEditBitmap = mBitmap;
 
         drawView.initializePen();
@@ -92,6 +108,15 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         lp.width = mBitmap.getWidth();
         lp.height = mBitmap.getHeight();
         drawView.requestLayout();
+
+        operateView = new OperateView(this, mBitmap);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                mBitmap.getWidth(), mBitmap.getHeight());
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        operateView.setLayoutParams(layoutParams);
+        centerLayout.addView(operateView);
+        operateView.setMultiAdd(true); //设置此参数，可以添加多个文字
+        operateView.setVisibility(View.GONE);
     }
 
     @Override
@@ -102,6 +127,19 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     mEditBitmap = drawView.getImageBitmap();
                     drawView.updateDrawMode(false);
                     drawView.loadImage(mEditBitmap);
+                    operateView.updateBitmap(mEditBitmap);
+                } else if (currentFlag == EditFlag.TEXT) {
+                    operateView.save();
+                    mEditBitmap = new OperateUtils(this).getBitmapByView(operateView);
+                    drawView.loadImage(mEditBitmap);
+                    operateView.reset();
+                    operateView.setVisibility(View.GONE);
+                } else if (currentFlag == EditFlag.BROW) {
+                    operateView.save();
+                    mEditBitmap = new OperateUtils(this).getBitmapByView(operateView);
+                    drawView.loadImage(mEditBitmap);
+                    operateView.reset();
+                    operateView.setVisibility(View.GONE);
                 }
                 reset();
                 break;
@@ -109,6 +147,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 if (currentFlag == EditFlag.DRAW) {
                     drawView.reset();
                     drawView.updateDrawMode(false);
+                } else if (currentFlag == EditFlag.TEXT) {
+                    operateView.reset();
+                    operateView.setVisibility(View.GONE);
+                } else if (currentFlag == EditFlag.BROW) {
+                    operateView.reset();
+                    operateView.setVisibility(View.GONE);
                 }
                 reset();
                 break;
@@ -117,13 +161,37 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 tvTitle.setText("涂鸦");
                 drawView.updateDrawMode(true);
                 editLayout.setVisibility(View.GONE);
+                drawLayout.setVisibility(View.VISIBLE);
+                menuLayout.setVisibility(View.VISIBLE);
+                break;
+            case R.id.brow:
+                currentFlag = EditFlag.BROW;
+                tvTitle.setText("表情");
+                tvAddTags.setText("添加表情");
+                operateView.updateBitmap(mEditBitmap);
+                operateView.setVisibility(View.VISIBLE);
+                editLayout.setVisibility(View.GONE);
+                tagsLayout.setVisibility(View.VISIBLE);
+                menuLayout.setVisibility(View.VISIBLE);
+                break;
+            case R.id.text:
+                currentFlag = EditFlag.TEXT;
+                tvTitle.setText("文字");
+                tvAddTags.setText("添加文字");
+                operateView.updateBitmap(mEditBitmap);
+                operateView.setVisibility(View.VISIBLE);
+                editLayout.setVisibility(View.GONE);
+                tagsLayout.setVisibility(View.VISIBLE);
                 menuLayout.setVisibility(View.VISIBLE);
                 break;
             case R.id.tv_cancel:
                 finish();
                 break;
             case R.id.tv_complete:
-                Toast.makeText(this, "完成", Toast.LENGTH_SHORT).show();
+                String saveBitmap = new OperateUtils(this).saveBitmap(mEditBitmap);
+                Intent intent = new Intent(EditActivity.this, PreviewActivity.class);
+                intent.putExtra("path", saveBitmap);
+                startActivity(intent);
                 break;
         }
     }
@@ -131,6 +199,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     private void reset() {
         tvTitle.setText("");
         currentFlag = EditFlag.NONE;
+        drawLayout.setVisibility(View.GONE);
+        tagsLayout.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
         editLayout.setVisibility(View.VISIBLE);
     }
@@ -169,4 +239,53 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     };
+
+    private View.OnClickListener tagsClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.tv_add_tags:
+                    if (currentFlag == EditFlag.TEXT) {
+                        final EditText editText = new EditText(EditActivity.this);
+                        new AlertDialog.Builder(EditActivity.this).setView(editText)
+                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                    @SuppressLint("NewApi")
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        String string = editText.getText().toString();
+                                        TextObject textObj = new OperateUtils(EditActivity.this).getTextObject(string, operateView, 5, 150, 100);
+                                        if (textObj != null) {
+                                            textObj.commit();
+                                            operateView.addItem(textObj);
+                                            operateView.setOnListener(new OperateView.MyListener() {
+                                                public void onClick(TextObject tObject) {
+                                                    alert(tObject);
+                                                }
+                                            });
+                                        }
+                                    }
+                                }).show();
+                    } else if (currentFlag == EditFlag.BROW) {
+                        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.comment);
+                        ImageObject imgObject = new OperateUtils(EditActivity.this)
+                                .getImageObject(bmp, operateView, 5, 150, 100);
+                        operateView.addItem(imgObject);
+                    }
+                    break;
+            }
+        }
+    };
+
+    private void alert(final TextObject tObject) {
+        final EditText editText = new EditText(this);
+        new AlertDialog.Builder(this).setView(editText)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @SuppressLint("NewApi")
+                    public void onClick(DialogInterface dialog, int which) {
+                        String string = editText.getText().toString();
+                        tObject.setText(string);
+                        tObject.commit();
+                    }
+                })
+                .show();
+    }
 }
