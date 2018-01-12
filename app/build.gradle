@@ -32,6 +32,7 @@ dependencies {
     compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
     compile 'com.google.android:flexbox:0.3.1'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    compile 'com.blankj:utilcode:1.11.1'
 }
 repositories {
     mavenCentral()

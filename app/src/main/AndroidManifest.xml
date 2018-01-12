@@ -33,7 +33,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".EditActivity" />
+        <activity
+            android:name=".EditActivity" />
         <activity android:name=".PreviewActivity" />
         <activity android:name=".CropActivity" />
     </application>

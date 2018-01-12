@@ -1,23 +1,30 @@
 package com.example.sun.photoeditdemo;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.blankj.utilcode.util.KeyboardUtils;
 import com.example.sun.photoeditdemo.utils.OperateUtils;
 import com.example.sun.photoeditdemo.utils.operate.ImageObject;
 import com.example.sun.photoeditdemo.utils.operate.OperateView;
@@ -31,6 +38,8 @@ import com.example.sun.photoeditdemo.widget.MosaicView;
  * @desc 图片编辑页面
  */
 public class EditActivity extends AppCompatActivity implements View.OnClickListener {
+    private View mRootView;
+
     private String mPath;// 修改的图片路径
     /**
      * 根据源图片生成的Bitmap
@@ -78,7 +87,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * 添加水印工具栏布局
      */
-    tagsLayout;
+    tagsLayout,
+    /**
+     * 输入框布局
+     */
+    inputLayout;
+
+    private EditText etContext;
 
     enum EditFlag {
         NONE("默认"), DRAW("涂鸦"), TEXT("文字"), BROW("表情"), MOSAIC("马赛克");
@@ -99,7 +114,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().setFlags(LayoutParams.FLAG_FULLSCREEN, LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_edit);
+        mRootView = View.inflate(this, R.layout.activity_edit, null);
+        setContentView(mRootView);
 
         // 初始化修改源文件路径以及生成对应的Bitmap
         mPath = getIntent().getStringExtra("camera_path");
@@ -122,6 +138,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         menuLayout = findViewById(R.id.menu_layout);
         drawLayout = findViewById(R.id.draw_layout);
         tagsLayout = findViewById(R.id.tags_layout);
+        inputLayout = findViewById(R.id.input_layout);
 
         tvCancel.setOnClickListener(this);
         tvComplete.setOnClickListener(this);
@@ -144,6 +161,23 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.pink).setOnClickListener(colorClickListener);
         findViewById(R.id.recall).setOnClickListener(colorClickListener);
         tvAddTags.setOnClickListener(tagsClickListener);
+
+        initInput();
+    }
+
+    private void initInput() {
+        etContext = inputLayout.findViewById(R.id.et_context);
+
+        inputLayout.setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.white).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.black).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.red).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.yellow).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.green).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.blue).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.purple).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.pink).setOnClickListener(inputColorClickListener);
+        inputLayout.findViewById(R.id.recall).setVisibility(View.GONE);
     }
 
     private void initData() {
@@ -267,12 +301,45 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(intent, REQUEST_CROP);
                 break;
             case R.id.tv_cancel:// 退出
-                finish();
+                if (inputLayout.getVisibility() == View.VISIBLE) {
+                    KeyboardUtils.hideSoftInput(this);
+                    inputLayout.setVisibility(View.GONE);
+                } else {
+                    finish();
+                }
                 break;
             case R.id.tv_complete:// 到下一个页面查看修改后的图片
-                intent = new Intent(EditActivity.this, PreviewActivity.class);
-                intent.putExtra("path", new OperateUtils(this).saveBitmap(mEditBitmap));
-                startActivity(intent);
+                if (inputLayout.getVisibility() == View.VISIBLE) {
+                    TextObject tObject = (TextObject) inputLayout.getTag();
+                    String text = etContext.getText().toString();
+                    int textColor = etContext.getCurrentTextColor();
+                    if (tObject != null) {
+                        if (!TextUtils.isEmpty(text)) {
+                            tObject.setText(text);
+                            tObject.setColor(textColor);
+                            tObject.commit();
+                        }
+                    } else {
+                        if (!TextUtils.isEmpty(text)) {
+                            tObject = new OperateUtils(EditActivity.this).getTextObject(text, operateView, 5, 150, 100);
+                            tObject.setText(text);
+                            tObject.setColor(textColor);
+                            tObject.commit();
+                            operateView.addItem(tObject);
+                            operateView.setOnListener(new OperateView.MyListener() {
+                                public void onClick(TextObject tObject) {
+                                    alert(tObject);
+                                }
+                            });
+                        }
+                    }
+                    KeyboardUtils.hideSoftInput(this);
+                    inputLayout.setVisibility(View.GONE);
+                } else {
+                    intent = new Intent(EditActivity.this, PreviewActivity.class);
+                    intent.putExtra("path", new OperateUtils(this).saveBitmap(mEditBitmap));
+                    startActivity(intent);
+                }
                 break;
         }
     }
@@ -332,30 +399,55 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
+    private View.OnClickListener inputColorClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.white:
+                    etContext.setTextColor(getResources().getColor(R.color.white));
+                    break;
+                case R.id.black:
+                    etContext.setTextColor(getResources().getColor(R.color.black));
+                    break;
+                case R.id.red:
+                    etContext.setTextColor(getResources().getColor(R.color.red));
+                    break;
+                case R.id.yellow:
+                    etContext.setTextColor(getResources().getColor(R.color.yellow));
+                    break;
+                case R.id.green:
+                    etContext.setTextColor(getResources().getColor(R.color.green));
+                    break;
+                case R.id.blue:
+                    etContext.setTextColor(getResources().getColor(R.color.blue));
+                    break;
+                case R.id.purple:
+                    etContext.setTextColor(getResources().getColor(R.color.purple));
+                    break;
+                case R.id.pink:
+                    etContext.setTextColor(getResources().getColor(R.color.pink));
+                    break;
+            }
+        }
+    };
+
     private View.OnClickListener tagsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.tv_add_tags:
                     if (currentFlag == EditFlag.TEXT) {
-                        final EditText editText = new EditText(EditActivity.this);
-                        new AlertDialog.Builder(EditActivity.this).setView(editText)
-                                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                                    @SuppressLint("NewApi")
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        String string = editText.getText().toString();
-                                        TextObject textObj = new OperateUtils(EditActivity.this).getTextObject(string, operateView, 5, 150, 100);
-                                        if (textObj != null) {
-                                            textObj.commit();
-                                            operateView.addItem(textObj);
-                                            operateView.setOnListener(new OperateView.MyListener() {
-                                                public void onClick(TextObject tObject) {
-                                                    alert(tObject);
-                                                }
-                                            });
-                                        }
-                                    }
-                                }).show();
+                        showOrHideTopButton(true);
+                        etContext.setText("");
+                        etContext.setTextColor(getResources().getColor(R.color.white));
+                        inputLayout.setTag(null);
+                        inputLayout.setVisibility(View.VISIBLE);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                KeyboardUtils.showSoftInput(EditActivity.this);
+                            }
+                        }, 500);
                     } else if (currentFlag == EditFlag.BROW) {
                         Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.comment);
                         ImageObject imgObject = new OperateUtils(EditActivity.this)
@@ -368,17 +460,13 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     };
 
     private void alert(final TextObject tObject) {
-        final EditText editText = new EditText(this);
-        new AlertDialog.Builder(this).setView(editText)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @SuppressLint("NewApi")
-                    public void onClick(DialogInterface dialog, int which) {
-                        String string = editText.getText().toString();
-                        tObject.setText(string);
-                        tObject.commit();
-                    }
-                })
-                .show();
+        showOrHideTopButton(true);
+        inputLayout.setTag(tObject);
+        etContext.setText(tObject.getText());
+        etContext.setTextColor(tObject.getColor());
+        etContext.setSelection(tObject.getText().length());
+        inputLayout.setVisibility(View.VISIBLE);
+        KeyboardUtils.showSoftInput(this);
     }
 
     @Override

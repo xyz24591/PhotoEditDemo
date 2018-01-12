@@ -256,4 +256,36 @@
                 android:textSize="12sp" />
         </com.google.android.flexbox.FlexboxLayout>
     </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/input_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_layout"
+        android:background="#E6000000"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <EditText
+            android:id="@+id/et_context"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_above="@id/input_color_layout"
+            android:padding="10dp"
+            android:gravity="start"
+            android:background="@null"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <include
+            android:id="@+id/input_color_layout"
+            layout="@layout/layout_draw_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </RelativeLayout>
