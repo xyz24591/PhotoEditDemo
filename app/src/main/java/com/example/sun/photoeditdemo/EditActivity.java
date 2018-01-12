@@ -41,7 +41,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
      */
     mEditBitmap;
 
-    private TextView tvTitle;
+    private TextView tvTitle, tvCancel, tvComplete;
 
     /**
      * 涂鸦控件
@@ -92,6 +92,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     private EditFlag currentFlag = EditFlag.NONE;
 
+    private static final int REQUEST_CROP = 10012;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,12 +101,16 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         getWindow().setFlags(LayoutParams.FLAG_FULLSCREEN, LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_edit);
 
+        // 初始化修改源文件路径以及生成对应的Bitmap
+        mPath = getIntent().getStringExtra("camera_path");
         initView();
         initData();
     }
 
     private void initView() {
         tvTitle = findViewById(R.id.tv_title);
+        tvCancel = findViewById(R.id.tv_cancel);
+        tvComplete = findViewById(R.id.tv_complete);
 
         centerLayout = findViewById(R.id.center_layout);
 
@@ -117,8 +123,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         drawLayout = findViewById(R.id.draw_layout);
         tagsLayout = findViewById(R.id.tags_layout);
 
-        findViewById(R.id.tv_cancel).setOnClickListener(this);
-        findViewById(R.id.tv_complete).setOnClickListener(this);
+        tvCancel.setOnClickListener(this);
+        tvComplete.setOnClickListener(this);
 
         findViewById(R.id.cha).setOnClickListener(this);
         findViewById(R.id.gou).setOnClickListener(this);
@@ -126,6 +132,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.brow).setOnClickListener(this);
         findViewById(R.id.text).setOnClickListener(this);
         findViewById(R.id.mosaic).setOnClickListener(this);
+        findViewById(R.id.crop).setOnClickListener(this);
 
         findViewById(R.id.white).setOnClickListener(colorClickListener);
         findViewById(R.id.black).setOnClickListener(colorClickListener);
@@ -140,8 +147,6 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initData() {
-        // 初始化修改源文件路径以及生成对应的Bitmap
-        mPath = getIntent().getStringExtra("camera_path");
         mBitmap = new OperateUtils(this).compressionFiller(mPath, centerLayout);
         mEditBitmap = mBitmap;
 
@@ -169,6 +174,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        Intent intent;
         switch (v.getId()) {
             case R.id.gou:// 保存当前的修改
                 if (currentFlag == EditFlag.DRAW) {
@@ -195,6 +201,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     mosaicView.setVisibility(View.GONE);
                 }
                 reset();
+                showOrHideTopButton(true);
                 break;
             case R.id.cha:// 撤销当前的修改
                 if (currentFlag == EditFlag.DRAW) {
@@ -211,6 +218,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     mosaicView.setVisibility(View.GONE);
                 }
                 reset();
+                showOrHideTopButton(true);
                 break;
             case R.id.draw:// 进行涂鸦
                 currentFlag = EditFlag.DRAW;
@@ -219,6 +227,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 editLayout.setVisibility(View.GONE);
                 drawLayout.setVisibility(View.VISIBLE);
                 menuLayout.setVisibility(View.VISIBLE);
+                showOrHideTopButton(false);
                 break;
             case R.id.brow:// 添加表情
                 currentFlag = EditFlag.BROW;
@@ -229,6 +238,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 editLayout.setVisibility(View.GONE);
                 tagsLayout.setVisibility(View.VISIBLE);
                 menuLayout.setVisibility(View.VISIBLE);
+                showOrHideTopButton(false);
                 break;
             case R.id.text:// 添加文字
                 currentFlag = EditFlag.TEXT;
@@ -239,6 +249,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 editLayout.setVisibility(View.GONE);
                 tagsLayout.setVisibility(View.VISIBLE);
                 menuLayout.setVisibility(View.VISIBLE);
+                showOrHideTopButton(false);
                 break;
             case R.id.mosaic:// 打马赛克
                 currentFlag = EditFlag.MOSAIC;
@@ -248,14 +259,19 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                 editLayout.setVisibility(View.GONE);
                 tagsLayout.setVisibility(View.VISIBLE);
                 menuLayout.setVisibility(View.VISIBLE);
+                showOrHideTopButton(false);
+                break;
+            case R.id.crop:
+                intent = new Intent(EditActivity.this, CropActivity.class);
+                intent.putExtra("path", new OperateUtils(this).saveBitmap(mEditBitmap));
+                startActivityForResult(intent, REQUEST_CROP);
                 break;
             case R.id.tv_cancel:// 退出
                 finish();
                 break;
             case R.id.tv_complete:// 到下一个页面查看修改后的图片
-                String saveBitmap = new OperateUtils(this).saveBitmap(mEditBitmap);
-                Intent intent = new Intent(EditActivity.this, PreviewActivity.class);
-                intent.putExtra("path", saveBitmap);
+                intent = new Intent(EditActivity.this, PreviewActivity.class);
+                intent.putExtra("path", new OperateUtils(this).saveBitmap(mEditBitmap));
                 startActivity(intent);
                 break;
         }
@@ -269,6 +285,16 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         tagsLayout.setVisibility(View.GONE);
         menuLayout.setVisibility(View.GONE);
         editLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void showOrHideTopButton(boolean show) {
+        if (show) {
+            tvCancel.setVisibility(View.VISIBLE);
+            tvComplete.setVisibility(View.VISIBLE);
+        } else {
+            tvCancel.setVisibility(View.INVISIBLE);
+            tvComplete.setVisibility(View.INVISIBLE);
+        }
     }
 
     private View.OnClickListener colorClickListener = new View.OnClickListener() {
@@ -353,5 +379,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 })
                 .show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CROP && resultCode == RESULT_OK) {
+            mPath = data.getStringExtra("path");
+            initData();
+        }
     }
 }

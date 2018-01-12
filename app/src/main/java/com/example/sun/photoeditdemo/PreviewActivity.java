@@ -14,7 +14,7 @@ import com.bumptech.glide.signature.StringSignature;
 /**
  * @author Sun
  * @data 2018/1/11
- * @desc
+ * @desc 预览页面
  */
 public class PreviewActivity extends AppCompatActivity {
     @Override
