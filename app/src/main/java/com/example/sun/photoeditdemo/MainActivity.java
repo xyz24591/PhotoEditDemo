@@ -61,6 +61,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        findViewById(R.id.btn_draw).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (camera_path == null) {
+                    return;
+                }
+                Intent intent = new Intent(MainActivity.this, DrawActivity.class);
+                intent.putExtra("camera_path", camera_path);
+                startActivity(intent);
+            }
+        });
 
         DisplayMetrics metric = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metric);
